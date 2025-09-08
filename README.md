@@ -1,46 +1,46 @@
-# ✅ Discord Task Manager Bot
+# Discord Task Manager Bot
 
-## 📌 Project Overview
+## Project Overview
 
 The **Task Manager Bot** is a lightweight yet powerful Discord bot designed to help teams organize and track their work inside a Discord server.\
 It allows members to create tasks, assign them, set deadlines, and get reminders—all without leaving Discord.
 
 ---
 
-## ✨ Core Features
+## Core Features
 
-### 📝 Task Management
+### Task Management
 
 - Create tasks with `/task add`.
 - List tasks with `/tasks my` (personal) or `/tasks all` (server-wide).
 - Mark tasks as done with `/task done`.
 - Assign tasks to yourself or other members.
 
-### ⏰ Reminders & Deadlines
+### Reminders & Deadlines
 
 - Get notified before due dates.
 - Weekly summary of all pending tasks posted in a channel.
-- Deadline alerts (e.g., "⚠️ Task X is due tomorrow").
+- Deadline alerts (e.g., "Task X is due tomorrow").
 
-### 🎭 Roles & Permissions
+### Roles & Permissions
 
 - **Managers**: Can assign tasks to members, mark any task done.
 - **Members**: Can only mark their own tasks done (unless manager).
 
 ---
 
-## 🌟 Quality of Life Features
+## Quality of Life Features
 
 - **Interactivity**: Buttons & dropdowns for marking tasks done or editing due dates.
 - **Slash Commands**: `/tasks my`, `/tasks all`, `/tasks due`.
 - **Personalization**: Optional DM reminders for assigned tasks.
 - **Per-User Lists**: Keep personal task lists separate from team tasks.
 - **UI Enhancements**: Rich embeds with task details (title, assignee, due date, status).
-- **Emoji Indicators**: ✅ done, ⏳ pending, ⚠️ overdue.
+- **Status Indicators**: done, pending, overdue.
 
 ---
 
-## 🚀 Stretch Goals (Nice to Have)
+## Stretch Goals (Nice to Have)
 
 - **Personality Layer**: Friendly nudges or encouragement via LLM integration.
 - **Kanban View**: Simple web dashboard showing tasks in columns (To Do / In Progress / Done).
@@ -49,7 +49,7 @@ It allows members to create tasks, assign them, set deadlines, and get reminders
 
 ---
 
-## 📦 Tech Stack
+## Tech Stack
 
 - **Bot Framework**: Discord.py (interactions, slash commands, buttons).
 - **Database**: MongoDB (tasks, assignments, reminders, archives).
@@ -57,7 +57,7 @@ It allows members to create tasks, assign them, set deadlines, and get reminders
 
 ---
 
-## 📂 Suggested Folder Structure
+## Suggested Folder Structure
 
 ```
 task-manager-bot/
@@ -82,7 +82,7 @@ task-manager-bot/
 
 ---
 
-## 🔑 Required Environment Variables
+## Required Environment Variables
 
 | Variable        | Description                      |
 | --------------- | -------------------------------- |
