@@ -8,7 +8,7 @@ from api.tasks import create_task, get_task, list_tasks, assign_task, mark_task_
 from api.users import users
 
 if __name__ == "__main__":
-   task = create_task("123456", "Write report", "Finish backend report", "2025-09-20", "high")
+   task = create_task("123456", "Write report", "Finish backend report", "high", "2025-09-20")
    print("Created Task:", task)
    task = assign_task(task["_id"], "00766647")
    fetched = get_task(task["_id"])
