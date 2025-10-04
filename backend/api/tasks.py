@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from bson import ObjectId
 from database.mongo_config import connection
 from typing import Optional, Dict, List, Any
@@ -6,6 +6,7 @@ from .users import haspermission, getorcreateuser
 
 db = connection()
 tasks = db["tasks"]
+reminders = db["reminders"]
 class TaskModel:
 
 #The function is used to initialize a register of fields   
@@ -62,7 +63,38 @@ class TaskModel:
     This function will create a task and adds it to the database
     
     """ 
-
+class ReminderModel:
+        def __init__(self, reminderid: Optional[str]=None, userid: Optional[str]=None, taskid: Optional[str]=None,
+                     channelid: Optional[str]=None, reminder_message: str=None,deadline: datetime=None, timebefore: Optional[int]= None ):
+             self._id= ObjectId(reminderid) if reminderid else ObjectId()
+             self.userid= userid
+             self.taskid= taskid
+             self.channelid= channelid
+             self.reminder_message= reminder_message
+             self.deadline= deadline
+             self.timebefore= timebefore
+        
+        def todict(self) -> Dict[str, Any]:
+             return {
+                  "_id": self._id,
+                  "userid": self.userid,
+                  "taskid": self.taskid,
+                  "channelid": self.channelid,
+                  "reminder_message": self.reminder_message,
+                  "deadline": self.deadline,
+                  "timebeforesending": self.timebefore
+             }
+        @classmethod
+        def fromdict(cls, data: dict[str, Any]):
+             return cls(
+                  userid= data.get("userid"),
+                  taskid= data.get("taskid"),
+                  channelid= data.get("channelid"),
+                  reminder_message= data.get("reminder_message"),
+                  deadline= data.get("deadline"),
+                  timebefore= data.get("timebeforesending")
+             )
+        
 def create_task(ifalloweduser: dict , userid, title, description, priority, deadline ):
          token = ifalloweduser.get("_id")
          if token:
@@ -105,10 +137,15 @@ types of filters: {} : lists all the tasks that exist in the db
                   {object: "something"}, {field: 0} : lists all the tasks that include the object but excludes the field
 """
 
-def list_tasks(filters=None):
-       if filters is None:
-          filters = {} 
-       return list(tasks.find(filters))  
+def list_tasks(ifalloweduser, filters=None):
+       token = ifalloweduser["role"]
+       if token == "manager":
+          if filters is None:
+               filters = {} 
+          return list(tasks.find(filters))  
+       else: 
+            print("Permission isn't granted!")
+            return None
 
 """
 
@@ -128,6 +165,7 @@ def assign_task(taskid, assigneeid, ifalloweduser: dict):
         return tasks.find_one(ObjectId(taskid))
     else:
          return None
+    
 """
    
      This function will mark a task as done by  and adds their id
@@ -147,6 +185,7 @@ def mark_task_done (taskid, ifalloweduser: dict, donebyid=None):
         return tasks.find_one(ObjectId(taskid))
        else:
             return None
+       
 """   
 
     This function will mark a task cancelled and register who cancelled it
@@ -167,7 +206,87 @@ def cancel_task(taskid, ifalloweduser: dict):
         return tasks.find_one(ObjectId(taskid))
       else:  
            return None
-        
-      
+'''
+     
+     This function is used to send a reminder of the deadline to the user
+     :param channelid: used to discern which channel the reminder will be sent in
+     :param userid: the user whom the message going to be sent to
+     :param taskid: the task which will the user be notified on
 
-   
+'''
+def send_task_reminder(taskid: str, userid: str=None, channelid: str=None ):
+     task = tasks.find_one(ObjectId(taskid))
+    
+     if not task: 
+          raise ValueError("Task not found")
+            
+     deadline = task.get("deadline")
+     status= task.get("status")
+    
+     if not deadline or (status == "Done"): 
+          return None
+     
+     reminder_config = get_reminder_config(userid=userid, taskid=taskid)
+     timebefore= reminder_config["timebeforesending"] if reminder_config else 172800
+     
+     now= datetime.now(timezone.utc)
+     reminder_time =  deadline - timedelta(seconds=timebefore)
+     
+     if now < reminder_time:
+          return None 
+     
+     taskname = task["title"]
+     reminder_messge = f"⏰Tiny reminder: Your task -{taskname}- is due {deadline}! " if deadline else f"⏰Tiny Reminder: Your task -{taskname}- hasn't been set to a due date." 
+     
+     
+     reminder = ReminderModel(
+          taskid= str(task["_id"]),
+          userid= userid,
+          channelid= channelid,
+          reminder_message= reminder_messge,
+          deadline= deadline,
+          timebefore= timebefore
+     )
+     
+     return reminder
+
+'''
+     This function is used to configure reminders that are sent to users
+     :param timebefore: the duration of time before the deadline of the task
+     
+'''
+def configure_task_reminder(userid: str = None, taskid: str= None, timebefore: int= None):
+     if not userid and not taskid:
+          raise(ValueError("Provide a userid or a taskid!"))
+     reminderobj = {}
+     if userid:
+          reminderobj["userid"]= userid
+     if taskid:     
+          reminderobj["taskid"]= taskid
+     queryupdate = {
+          "$set": {
+               "timebeforesending": timebefore,
+               "updated_at": datetime.now(timezone.utc) #Additional fields in registers for better traceability
+          },
+          "$setOnInsert": {
+               "created_at": datetime.now(timezone.utc)
+          }
+     }
+     reminders.update_one(reminderobj, queryupdate, upsert=True)
+     return reminders.find_one(reminderobj)
+
+'''
+     This function is used to get the desired reminder object
+     
+'''
+def get_reminder_config(userid: str= None, taskid: str=None):
+     reminderobj= {}
+     if userid: 
+          reminderobj["userid"]= userid
+     if taskid: 
+          reminderobj["taskid"]= taskid
+
+     return reminders.find_one(reminderobj)
+
+
+          
