@@ -1,0 +1,2 @@
+database: mongodb
+python libraries: pymongo, datetime, typing
