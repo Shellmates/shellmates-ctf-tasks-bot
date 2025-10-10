@@ -83,19 +83,25 @@ def managingusers( userid ) -> bool:
 
 '''
 
-def getorcreateuser(userid, username) -> dict:
-    user = users.find_one({"_id": userid})
-    if user: return user
-    
+def getorcreateuser(userid: str | None, username: str) -> dict:
+    user = users.find_one({"username": username})
+    if user:
+        return user
+
+    if userid:
+        user = users.find_one({"_id": userid})
+        if user:
+            return user
+
     new_user = UserModel(
-        username= username,
-        roles = "member",
-        defaultremindertime= None,
+        username=username,
+        roles="member",
+        defaultremindertime=None,
         userid=userid
-    )      
+    )
+
     users.insert_one(new_user.todict())
     return new_user.todict()
-
 '''
 
     This function is used to assign users as managers with 
