@@ -95,24 +95,29 @@ class ReminderModel:
                   timebefore= data.get("timebeforesending")
              )
         
-def create_task(ifalloweduser: dict , userid, title, description, priority, deadline ):
-         token = ifalloweduser.get("_id")
-         if token:
-             task = TaskModel(
-                 title= title,
-                 task_creator=ifalloweduser.get("username"),
-                 description= description,
-                 assignees= [userid],
-                 deadline= deadline,
-                 priority= priority
-            )
-             tasks.insert_one(task.todict())
-             return task.todict()
-         else:
-              print("permission isn't granted!")
-              return None
+def create_task(ifalloweduser: dict, userid, title, description, priority, deadline):
+    token = ifalloweduser.get("_id")
+    if token:
+        task = TaskModel(
+            title=title,
+            task_creator=ifalloweduser.get("username"),
+            description=description,
+            assignees=[userid],
+            deadline=deadline,
+            priority=priority,
+        )
 
-  
+        # Add consistent fields for easier filtering
+        task_dict = task.todict()
+        task_dict["createdby"] = ifalloweduser["_id"]         # store the creator ID
+        task_dict["createdby_name"] = ifalloweduser["username"]  # store the creator name
+
+        tasks.insert_one(task_dict)
+        return task_dict
+    else:
+        print("permission isn't granted!")
+        return None
+
 """
 
     This function will get the wanted task and return it 
@@ -138,14 +143,17 @@ types of filters: {} : lists all the tasks that exist in the db
 """
 
 def list_tasks(ifalloweduser, filters=None):
-       token = ifalloweduser["role"]
-       if token == "manager":
-          if filters is None:
-               filters = {} 
-          return list(tasks.find(filters))  
-       else: 
-            print("Permission isn't granted!")
-            return None
+     if filters is None:
+          filters = {} 
+     task= list(tasks.find(filters)) 
+     if ifalloweduser==None :
+          return task
+     for tasktemp in task:
+          if ifalloweduser["_id"] not in tasktemp["assignees"]:
+               print("Permission isn't granted!")
+               return None
+     return task   
+
 
 """
 

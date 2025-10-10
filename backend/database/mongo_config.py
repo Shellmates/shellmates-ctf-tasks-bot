@@ -17,5 +17,3 @@ def connection():
         client= MongoClient(MONGO_URI)
         db= client[MONGO_DB_NAME]
     return db    
-        
-

@@ -11,5 +11,5 @@ if __name__ == "__main__":
     dbuser = getorcreateuser(None, "tedjeddine")
     task = create_task(dbuser, None, "Write report", "Finish backend report", "high", "2025-09-20")
     cancelledtask= cancel_task(task.get("_id"), dbuser)
-    print("Task:", task)
-    print("cancelledtask:", cancelledtask)
+   # print("Task:", task)
+    #print("cancelledtask:", cancelledtask)
