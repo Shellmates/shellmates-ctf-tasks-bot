@@ -102,9 +102,7 @@ async def task_add(interaction: discord.Interaction):
 async def tasks_my(interaction: discord.Interaction):
 
     dbuser = getorcreateuser(None, str(interaction.user.name))
-    print(dbuser)
     user_tasks = list_tasks(dbuser)
-    print(user_tasks)
 
     if not user_tasks:
         await interaction.response.send_message("📭 You have no tasks.", ephemeral=True)
@@ -119,6 +117,35 @@ async def tasks_my(interaction: discord.Interaction):
         )
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
+
+
+
+@bot.tree.command(name="task_assign", description="Assign a task to a user")
+async def task_assign(interaction: discord.Interaction, task_id: str, assignee: discord.User):
+    dbuser = getorcreateuser(None, str(interaction.user.name))
+    result= assign_task(task_id, str(assignee.name), dbuser)
+    
+    if result:
+        embed = discord.Embed(
+            title="Task Assigned",
+            description=f"Task '{result.get('title', 'Unknown')}' assigned to {assignee.name}",
+            color=discord.Color.green()
+        )
+        embed.add_field(
+            name="Due Date",
+            value=result.get('deadline', 'N/A'),
+            inline=True
+        )
+        embed.add_field(
+            name="Status",
+            value=result.get('status', 'Pending'),
+            inline=True
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+    else:
+        await interaction.response.send_message(f"Failed to assign task", ephemeral=True)
+
+
 @bot.tree.command(name="tasks_all", description="List all tasks from the database")
 async def tasks_all(interaction: discord.Interaction):
     all_tasks = list_tasks(None)
@@ -130,7 +157,7 @@ async def tasks_all(interaction: discord.Interaction):
     for t in all_tasks:
         embed.add_field(
             name=t["title"],
-            value=f"By: {t.get('createdby_name', 'Unknown')} | Due: {t.get('deadline', 'N/A')} | Status: {t.get('status', 'Pending')}",
+            value=f"ID: {t.get('_id','')} By: {t.get('createdby_name', 'Unknown')} | Due: {t.get('deadline', 'N/A')} | Status: {t.get('status', 'Pending')}",
             inline=False
         )
     await interaction.response.send_message(embed=embed)

@@ -148,11 +148,12 @@ def list_tasks(ifalloweduser, filters=None):
      task= list(tasks.find(filters)) 
      if ifalloweduser==None :
           return task
+     
+     user_tasks = []
      for tasktemp in task:
-          if ifalloweduser["_id"] not in tasktemp["assignees"]:
-               print("Permission isn't granted!")
-               return None
-     return task   
+          if ifalloweduser["_id"] in tasktemp["assignees"] or ifalloweduser["username"] in tasktemp["assignees"]:
+               user_tasks.append(tasktemp)
+     return user_tasks   
 
 
 """

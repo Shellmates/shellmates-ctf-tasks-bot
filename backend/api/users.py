@@ -118,7 +118,7 @@ def assignmanager(ifalloweduser: dict, newmanagerid: str, username: str):
          idd  = user.get("_id")
          updateduser = users.update_one(
              {"_id": idd},
-             {"$set": {"roles": "admin"}}
+             {"$set": {"roles": "manager"}}
             )  
          print(f"user {username} has been promoted to manager")
          return updateduser
